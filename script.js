@@ -28,6 +28,8 @@ let velocidadeYBolinha = 5;
 let meusPontos = 0;
 let pontosDoOponente = 0;
 
+let chanceDeErrar = 0;
+
 function setup() {
     createCanvas(width, height);
 }
@@ -43,18 +45,21 @@ function draw() {
     movimentaRaqueteOponente()
     verificaColisaoRaqueteOponente();
     incluiPlacar();
+    marcaPonto();
+    preload();
+    bolinhaNaoFicaPresa();
 }
 
 function mostraBolinha() {
     circle(xBolinha, yBolinha, diametro);
 }
 
-function movimentaBolinha(){
+function movimentaBolinha() {
     xBolinha += velocidadeXBolinha;
     yBolinha += velocidadeYBolinha;
 }
 
-function colisaoBorda(){
+function colisaoBorda() {
     if (xBolinha + raio > width || xBolinha - raio < 0) {
         velocidadeXBolinha *= -1;
     }
@@ -64,38 +69,96 @@ function colisaoBorda(){
     }
 }
 
-function raquetePlayer(x, y){
+function raquetePlayer(x, y) {
     rect(x, y, larguraRaquete, alturaRaquete, 3);
 }
 
-function movimentaRaquetePlayer(){
-    if(keyIsDown(UP_ARROW)){
+function movimentaRaquetePlayer() {
+    if (keyIsDown(UP_ARROW)) {
         yRaquete -= 10;
     }
-    if(keyIsDown(DOWN_ARROW)){
+    if (keyIsDown(DOWN_ARROW)) {
         yRaquete += 10;
     }
 }
 
-function verificaColisaoRaquete(){
-    if (xBolinha - raio < xRaquete + larguraRaquete && yBolinha - raio < yRaquete + alturaRaquete && yBolinha + raio > yRaquete){
+function verificaColisaoRaquete() {
+    if (xBolinha - raio < xRaquete + larguraRaquete && yBolinha - raio < yRaquete + alturaRaquete && yBolinha + raio > yRaquete) {
         velocidadeXBolinha *= -1;
+        raquetada.play();
     }
 }
 
-function verificaColisaoRaqueteOponente(){
-    if (xBolinha + raio > xRaqueteMachine && yBolinha + raio < yRaqueteMachine + alturaRaquete && yBolinha + raio > yRaqueteMachine - alturaRaquete){
+function verificaColisaoRaqueteOponente() {
+    if (xBolinha + raio > xRaqueteMachine && yBolinha + raio < yRaqueteMachine + alturaRaquete && yBolinha + raio > yRaqueteMachine - alturaRaquete) {
         velocidadeXBolinha *= -1;
+        raquetada.play();
     }
 }
 
-function movimentaRaqueteOponente(){
+//SinglePlayer
+function movimentaRaqueteOponente() {
     velocidadeYOponente = yBolinha - yRaqueteMachine - alturaRaquete / 2 - 30;
-    yRaqueteMachine += velocidadeYOponente;
+    yRaqueteMachine += velocidadeYOponente + chanceDeErrar;
+    calculaChanceDeErrar();
 }
 
-function incluiPlacar(){
-    fill(255)
-     text(meusPontos, 278, 26);
-     text(pontosDoOponente, 321, 26)
+function calculaChanceDeErrar(){
+    if (pontosDoOponente >= meusPontos) {
+        chanceDeErrar +=1;
+        if(chanceDeErrar >= 39){
+            chanceDeErrar = 40
+        }
+        } else {
+            chanceDeErrar -= 1;
+            if (chanceDeErrar <= 35){
+                chanceDeErrar = 35;
+            }
+        }
+    }
+
+//Multplayer
+// function movimentaRaqueteOponente() {
+//     if (keyIsDown(87)) {
+//         yRaqueteMachine -= 10;
+//     }
+//     if (keyIsDown(83)) {
+//         yRaqueteMachine += 10;
+//     }
+// }
+
+function incluiPlacar() {
+    textAlign(CENTER);
+    textSize(16);
+    fill(color(255, 194, 10));
+    rect(150, 10, 40, 20, 3);
+    fill(255);
+    text(meusPontos, 170, 26);
+    fill(color(255, 194, 10));
+    rect(450, 10, 40, 20, 3);
+    fill(255);
+    text(pontosDoOponente, 470, 26)
+}
+
+function marcaPonto() {
+    if (xBolinha > 590) {
+        meusPontos += 1;
+        ponto.play();
+    }
+    if (xBolinha < 10) {
+        pontosDoOponente += 1;
+        ponto.play();
+    }
+    
+}
+
+function preload(){
+    ponto = loadSound("/audio/ponto.mp3");
+    raquetada = loadSound("/audio/raquetada.mp3");
+}
+
+function bolinhaNaoFicaPresa(){
+    if (xBolinha - raio < 0){
+        xBolinha = 23;
+    }
 }
